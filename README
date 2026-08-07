@@ -1,0 +1,269 @@
+# Email Scheduler System
+
+## Overview
+
+A full-stack email scheduling application built using Express.js, PostgreSQL, Redis, BullMQ, Prisma, and Next.js.
+
+Users can upload a CSV containing email addresses, compose an email, schedule delivery with delays, and track email status through a dashboard.
+
+---
+
+# Tech Stack
+
+## Backend
+
+- Node.js
+- Express.js
+- TypeScript
+- PostgreSQL
+- Prisma ORM
+- Redis (Memurai)
+- BullMQ
+- Nodemailer
+
+## Frontend
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+
+---
+
+# Features Implemented
+
+## Backend
+
+### Email Scheduling
+- Schedule emails using BullMQ delayed jobs.
+- CSV-based bulk email scheduling.
+- Configurable delay between emails.
+
+### Persistence on Restart
+- Email schedules are stored in PostgreSQL.
+- Scheduled emails remain available after application restart.
+- Pending jobs can be recovered from database records.
+
+### Rate Limiting
+- Configurable hourly email limit.
+- Prevents excessive email sending.
+
+### Concurrency
+- BullMQ worker processes multiple jobs concurrently.
+- Worker concurrency configured to 5.
+
+### Email Tracking
+- Scheduled emails
+- Sent emails
+- Delivery timestamps
+
+---
+
+## Frontend
+
+### Authentication
+- Login page
+
+### Dashboard
+- View email statistics
+- Scheduled emails table
+- Sent emails table
+
+### Compose Email
+- Upload CSV file
+- Enter subject
+- Enter email body
+- Configure delay
+- Configure hourly limit
+
+### Email Management
+- View scheduled emails
+- View sent emails
+- Delete emails
+
+---
+
+# Project Architecture
+
+Frontend (Next.js)
+↓
+Express API
+↓
+PostgreSQL (Persistence)
+↓
+BullMQ Queue
+↓
+Redis
+↓
+Worker
+↓
+SMTP (Gmail / Ethereal)
+
+---
+
+# How Scheduling Works
+
+1. User uploads CSV file.
+2. Backend parses email addresses.
+3. Campaign is created in PostgreSQL.
+4. Email records are stored with status = scheduled.
+5. BullMQ delayed jobs are created.
+6. Worker processes jobs at scheduled time.
+7. Status changes from scheduled → sent.
+
+---
+
+# Persistence on Restart
+
+All scheduled emails are stored in PostgreSQL.
+
+If the application restarts:
+
+1. Scheduled emails remain stored in database.
+2. Pending emails can be recovered.
+3. Email delivery continues after restart.
+
+This prevents loss of scheduled emails during application restarts.
+
+---
+
+# Rate Limiting
+
+The system supports configurable hourly sending limits.
+
+Example:
+
+- Hourly Limit = 100
+
+Maximum 100 emails can be processed per hour.
+
+---
+
+# Concurrency
+
+BullMQ worker concurrency:
+
+```ts
+concurrency: 5
+```
+
+Up to 5 email jobs can be processed simultaneously.
+
+---
+
+# Backend Setup
+
+## Install Dependencies
+
+```bash
+cd backend
+npm install
+```
+
+## Configure Environment Variables
+
+Create `.env`
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/email_scheduler
+
+EMAIL_USER=your_email@gmail.com
+
+EMAIL_PASS=your_app_password
+
+REDIS_URL=redis://127.0.0.1:6379
+```
+
+## Run Prisma
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+## Start Backend
+
+```bash
+npm run dev
+```
+
+## Start Worker
+
+```bash
+npx ts-node src/workers/emailWorker.ts
+```
+
+---
+
+# Frontend Setup
+
+## Install Dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+## Start Frontend
+
+```bash
+npm run dev
+```
+
+Frontend URL:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# Redis Setup
+
+Install and start Redis (or Memurai on Windows).
+
+Default:
+
+```text
+127.0.0.1:6379
+```
+
+---
+
+# Ethereal Email Setup
+
+1. Create account using Ethereal.
+2. Generate SMTP credentials.
+3. Add credentials to `.env`.
+
+Example:
+
+```env
+EMAIL_USER=ethereal_user
+EMAIL_PASS=ethereal_password
+```
+
+Alternatively Gmail SMTP can be used.
+
+---
+
+# Demo Video
+
+The demo includes:
+
+- Login
+- CSV upload
+- Schedule emails
+- Scheduled emails dashboard
+- Sent emails dashboard
+- Server restart demonstration
+- Email delivery after restart
+
+---
+
+# Assumptions & Trade-offs
+
+- Gmail SMTP used for testing.
+- Redis used for queue management.
+- PostgreSQL used as persistent storage.
+- Email delivery depends on SMTP availability.
+- UI focused on assignment requirements.
